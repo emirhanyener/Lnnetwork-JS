@@ -1,7 +1,8 @@
 class NeuralNetwork {
   /**
    * @param {Array} layers [input, hidden..., output]
-   * @param {Float} (optional) learning_rate
+   * @param {Float} learning_rate (optional) learning_rate
+   * @param {Object} load_data (optional) pretrained neural network data
    */
   constructor(layers, learning_rate = 0.01, load_data = null) {
     this.layers = layers;
@@ -9,28 +10,36 @@ class NeuralNetwork {
 
     this.activation = NeuralNetwork.activation_functions.sigmoid;
 
+    //weights and biases
     this.weights = [];
     this.biases = [];
 
-    for (let l = 0; l < layers.length - 1; l++) {
-      this.weights.push([]);
-      this.biases.push([]);
-      for (let n = 0; n < layers[l + 1]; n++) {
-        this.weights[l].push([]);
-        for (let c = 0; c < layers[l]; c++) {
-          this.weights[l][n].push(Math.random() * 2 - 1);
+    if(load_data == null){
+        for (let l = 0; l < layers.length - 1; l++) {
+            this.weights.push([]);
+            this.biases.push([]);
+            for (let n = 0; n < layers[l + 1]; n++) {
+                this.weights[l].push([]);
+                for (let c = 0; c < layers[l]; c++) {
+                    this.weights[l][n].push(Math.random() * 2 - 1);
+                }
+            }
+            for (let n = 0; n < this.weights[l].length; n++) {
+                this.biases[l].push(Math.random() * 2 - 1);
+            }
         }
-      }
-      for (let n = 0; n < this.weights[l].length; n++) {
-        this.biases[l].push(Math.random() * 2 - 1);
-      }
+    } else {
+        this.layers = load_data.layers;
+        this.learning_rate = load_data.learning_rate;
+        this.weights = load_data.weights;
+        this.biases = load_data.biases;
     }
   }
 
   /**
    * Returns output data from trained neural network.
    * @param {Array} input array input data
-   * @returns {Array}
+   * @returns {Array} output
    */
   predict(input) {
     let activations = input;
@@ -53,7 +62,7 @@ class NeuralNetwork {
   /**
    * @param {Array} input array input data
    * @param {Array} target array target output data
-   * @param {Number} (optional) epoch epoch num.
+   * @param {Number} epoch (optional) epoch epoch num.
    */
   train(input, target, epoch = 1) {
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
@@ -161,6 +170,9 @@ class NeuralNetwork {
     this.activation = activation;
   }
 
+  /**
+   * Download trained neural network data
+   */
   save() {
     const blob = new Blob([JSON.stringify(this, null, 4)], {
       type: "application/json",
@@ -179,6 +191,9 @@ class NeuralNetwork {
     document.body.removeChild(link);
   }
 
+  /**
+   * Open with new tab trained neural network data
+   */
   open() {
     const blob = new Blob([JSON.stringify(this, null, 4)], {
       type: "application/json",
