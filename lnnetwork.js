@@ -211,4 +211,14 @@ class NeuralNetwork {
     );
     document.body.removeChild(link);
   }
+
+  /**
+   * Load pretrained neural network
+   */
+  load(data) {
+    this.layers = data.layers;
+    this.learning_rate = data.learning_rate;
+    this.weights = data.weights;
+    this.biases = data.biases;
+  }
 }
