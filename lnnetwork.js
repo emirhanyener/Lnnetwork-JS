@@ -3,7 +3,7 @@ class NeuralNetwork {
    * @param {Array} layers [input, hidden..., output]
    * @param {Float} (optional) learning_rate
    */
-  constructor(layers, learning_rate = 0.01) {
+  constructor(layers, learning_rate = 0.01, load_data = null) {
     this.layers = layers;
     this.learning_rate = learning_rate;
 
@@ -155,9 +155,45 @@ class NeuralNetwork {
 
   /**
    * Set activation function.
-   * USAGE: setActivationFunction(NeuralNetwork.activation_functions.sigmoid)
+   * USAGE: set_activation_function(NeuralNetwork.activation_functions.sigmoid)
    */
-  setActivationFunction(activation) {
+  set_activation_function(activation) {
     this.activation = activation;
+  }
+
+  save() {
+    const blob = new Blob([JSON.stringify(this, null, 4)], {
+      type: "application/json",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "neural_network.txt";
+    document.body.appendChild(link);
+    link.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
+    document.body.removeChild(link);
+  }
+
+  open() {
+    const blob = new Blob([JSON.stringify(this, null, 4)], {
+      type: "application/json",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      })
+    );
+    document.body.removeChild(link);
   }
 }
