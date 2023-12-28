@@ -218,6 +218,11 @@ class NeuralNetwork {
     this.biases = data.biases;
   }
 
+  /**
+   * 
+   * @param {Array} test_data 
+   * @returns sum_true
+   */
   test(test_data){
     const outputs = [];
     test_data.forEach(element => {
@@ -236,16 +241,24 @@ class NeuralNetwork {
       outputs[outputs.length - 1][i] = 1;
     });
 
-    const output_sum = [];
+    const sum_true = [];
     for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
-      output_sum.push(0);
+      sum_true.push(0);
       for (let o = 0; o < outputs.length; o++) {
         if(test_data[o][1][index] == 1 && outputs[o][index] == 1){
-          output_sum[index]++;
+          sum_true[index]++;
           break;
         }
       }
     }
-    return output_sum;
+    return sum_true;
+  }
+
+  static calculate_accuration(output, data_count){
+    let accuration = 0;
+    for (let index = 0; index < output.length; index++) {
+      accuration += (output[index] / data_count);
+    }
+    return accuration;
   }
 }
