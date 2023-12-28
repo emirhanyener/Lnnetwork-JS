@@ -217,4 +217,25 @@ class NeuralNetwork {
     this.weights = data.weights;
     this.biases = data.biases;
   }
+
+  test(test_data){
+    const outputs = [];
+    test_data.forEach(element => {
+      outputs.push(this.predict(element[0]));
+    });
+    const output_avg = [];
+    for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
+      output_avg.push(0);
+    }
+    outputs.forEach(element => {
+      for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
+        output_avg[index] += element[index];
+      }
+    });
+    for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
+      output_avg[index] /= test_data.length;
+    }
+
+    return output_avg;
+  }
 }
