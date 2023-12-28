@@ -222,20 +222,30 @@ class NeuralNetwork {
     const outputs = [];
     test_data.forEach(element => {
       outputs.push(this.predict(element[0]));
-    });
-    const output_avg = [];
-    for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
-      output_avg.push(0);
-    }
-    outputs.forEach(element => {
-      for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
-        output_avg[index] += element[index];
+      let i = 0;
+      for (let x = 0; x < this.layers[this.layers.length - 1]; x++) {
+        for (let y = 0; y < this.layers[this.layers.length - 1]; y++) {
+          if(outputs[outputs.length - 1][y] > outputs[outputs.length - 1][i]){
+            i = y;
+          }
+        }
       }
+      for (let y = 0; y < this.layers[this.layers.length - 1]; y++) {
+        outputs[outputs.length - 1][y] = 0;
+      }
+      outputs[outputs.length - 1][i] = 1;
     });
-    for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
-      output_avg[index] /= test_data.length;
-    }
 
-    return output_avg;
+    const output_sum = [];
+    for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
+      output_sum.push(0);
+      for (let o = 0; o < outputs.length; o++) {
+        if(test_data[o][1][index] == 1 && outputs[o][index] == 1){
+          output_sum[index]++;
+          break;
+        }
+      }
+    }
+    return output_sum;
   }
 }
