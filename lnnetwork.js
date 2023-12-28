@@ -8,31 +8,31 @@ class NeuralNetwork {
     this.layers = layers;
     this.learning_rate = learning_rate;
 
-    this.activation = NeuralNetwork.activation_functions.sigmoid;
+    this.activation = NeuralNetwork.sigmoid;
 
     //weights and biases
     this.weights = [];
     this.biases = [];
 
-    if(load_data == null){
-        for (let l = 0; l < layers.length - 1; l++) {
-            this.weights.push([]);
-            this.biases.push([]);
-            for (let n = 0; n < layers[l + 1]; n++) {
-                this.weights[l].push([]);
-                for (let c = 0; c < layers[l]; c++) {
-                    this.weights[l][n].push(Math.random() * 2 - 1);
-                }
-            }
-            for (let n = 0; n < this.weights[l].length; n++) {
-                this.biases[l].push(Math.random() * 2 - 1);
-            }
+    if (load_data == null) {
+      for (let l = 0; l < layers.length - 1; l++) {
+        this.weights.push([]);
+        this.biases.push([]);
+        for (let n = 0; n < layers[l + 1]; n++) {
+          this.weights[l].push([]);
+          for (let c = 0; c < layers[l]; c++) {
+            this.weights[l][n].push(Math.random() * 2 - 1);
+          }
         }
+        for (let n = 0; n < this.weights[l].length; n++) {
+          this.biases[l].push(Math.random() * 2 - 1);
+        }
+      }
     } else {
-        this.layers = load_data.layers;
-        this.learning_rate = load_data.learning_rate;
-        this.weights = load_data.weights;
-        this.biases = load_data.biases;
+      this.layers = load_data.layers;
+      this.learning_rate = load_data.learning_rate;
+      this.weights = load_data.weights;
+      this.biases = load_data.biases;
     }
   }
 
@@ -123,42 +123,38 @@ class NeuralNetwork {
   /**
    * Activation functions: sigmoid, linear, relu and tanh
    */
-  static activation_functions = {
-    sigmoid: {
-      function: (x) => {
-        return 1 / (1 + Math.exp(-x));
-      },
-      derivative: (y) => {
-        return y * (1 - y);
-      },
+  static sigmoid = {
+    function: (x) => {
+      return 1 / (1 + Math.exp(-x));
     },
-    linear: {
-      function: (x) => {
-        return x;
-      },
-      derivative: (y) => {
-        return 1;
-      },
+    derivative: (y) => {
+      return y * (1 - y);
     },
-    relu: {
-      function: (x) => {
-        return x >= 0 ? x : 0;
-      },
-      derivative: (y) => {
-        return y > 0 ? 1 : 0;
-      },
+  };
+  static linear = {
+    function: (x) => {
+      return x;
     },
-    tanh: {
-      function: (x) => {
-        return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
-      },
-      derivative: (y) => {
-        return (
-          1 -
-          NeuralNetwork.activation_functions.tanh.function(y) *
-            NeuralNetwork.activation_functions.tanh.function(y)
-        );
-      },
+    derivative: (y) => {
+      return 1;
+    },
+  };
+  static relu = {
+    function: (x) => {
+      return x >= 0 ? x : 0;
+    },
+    derivative: (y) => {
+      return y > 0 ? 1 : 0;
+    },
+  };
+  static tanh = {
+    function: (x) => {
+      return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
+    },
+    derivative: (y) => {
+      return (
+        1 - NeuralNetwork.tanh.function(y) * NeuralNetwork.tanh.function(y)
+      );
     },
   };
 
