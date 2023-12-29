@@ -247,7 +247,6 @@ class NeuralNetwork {
       for (let o = 0; o < outputs.length; o++) {
         if(test_data[o][1][index] == 1 && outputs[o][index] == 1){
           sum_true[index]++;
-          break;
         }
       }
     }
