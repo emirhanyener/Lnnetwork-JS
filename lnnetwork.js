@@ -65,6 +65,24 @@ class NeuralNetwork {
    * @param {Number} epoch (optional) epoch epoch num.
    */
   train(input, target, epoch = 1) {
+    for (let index = 0; index < input.length; index++) {
+      if(input[index] == NaN){
+        console.error("input is NaN");
+        return;
+      } else if(input[index] == null){
+        console.error("input is null");
+        return;
+      }
+    }
+    for (let index = 0; index < target.length; index++) {
+      if(target[index] == NaN){
+        console.error("target is NaN");
+        return;
+      } else if(target[index] == null){
+        console.error("target is null");
+        return;
+      }
+    }
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
       let activations = [input];
       let layer_inputs = [input];
