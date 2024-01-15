@@ -64,77 +64,141 @@ class NeuralNetwork {
    * @param {Array} target array target output data
    * @param {Number} epoch (optional) epoch epoch num.
    */
-  train(input, target, epoch = 1) {
+  train(input, target) {
     for (let index = 0; index < input.length; index++) {
-      if(input[index] == NaN){
-        console.error("input is NaN");
+      if (input[index] == NaN) {
+        console.error("NaN input");
+        console.error("*finishing");
         return;
-      } else if(input[index] == null){
-        console.error("input is null");
+      } else if (input[index] == null) {
+        console.error("null input");
+        console.error("*finishing");
         return;
       }
     }
     for (let index = 0; index < target.length; index++) {
-      if(target[index] == NaN){
-        console.error("target is NaN");
+      if (target[index] == NaN) {
+        console.error("NaN target");
+        console.error("*finishing");
         return;
-      } else if(target[index] == null){
-        console.error("target is null");
+      } else if (target[index] == null) {
+        console.error("null target");
+        console.error("*finishing");
         return;
       }
     }
-    for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
-      let activations = [input];
-      let layer_inputs = [input];
+    let activations = [input];
+    let layer_inputs = [input];
 
-      for (let l = 0; l < this.layers.length - 1; l++) {
-        const layer_outputs = [];
-        for (let n = 0; n < this.layers[l + 1]; n++) {
-          let sum = 0;
-          for (let c = 0; c < this.layers[l]; c++) {
-            sum += activations[l][c] * this.weights[l][n][c];
-          }
-          const output = this.activation.function(sum + this.biases[l][n]);
-          layer_outputs.push(output);
-        }
-        activations.push(layer_outputs);
-        layer_inputs.push(layer_outputs);
-      }
-
-      const errors = [];
-      let output_error = [];
-      for (let n = 0; n < this.layers[this.layers.length - 1]; n++) {
-        output_error.push(target[n] - activations[activations.length - 1][n]);
-      }
-      errors.push(output_error);
-
-      for (let l = this.layers.length - 2; l > 0; l--) {
-        const hidden_error = [];
+    for (let l = 0; l < this.layers.length - 1; l++) {
+      const layer_outputs = [];
+      for (let n = 0; n < this.layers[l + 1]; n++) {
+        let sum = 0;
         for (let c = 0; c < this.layers[l]; c++) {
-          let error = 0;
-          for (let n = 0; n < this.layers[l + 1]; n++) {
-            error += errors[0][n] * this.weights[l][n][c];
-          }
-          hidden_error.push(error);
+          sum += activations[l][c] * this.weights[l][n][c];
         }
-        errors.unshift(hidden_error);
+        const output = this.activation.function(sum + this.biases[l][n]);
+        layer_outputs.push(output);
       }
+      activations.push(layer_outputs);
+      layer_inputs.push(layer_outputs);
+    }
 
-      for (let l = 0; l < this.layers.length - 1; l++) {
+    const errors = [];
+    let output_error = [];
+    for (let n = 0; n < this.layers[this.layers.length - 1]; n++) {
+      output_error.push(target[n] - activations[activations.length - 1][n]);
+    }
+    errors.push(output_error);
+
+    for (let l = this.layers.length - 2; l > 0; l--) {
+      const hidden_error = [];
+      for (let c = 0; c < this.layers[l]; c++) {
+        let error = 0;
         for (let n = 0; n < this.layers[l + 1]; n++) {
-          for (let c = 0; c < this.layers[l]; c++) {
-            this.weights[l][n][c] +=
-              this.learning_rate *
-              errors[l][n] *
-              this.activation.derivative(layer_inputs[l + 1][n]) *
-              activations[l][c];
-          }
-          this.biases[l][n] +=
+          error += errors[0][n] * this.weights[l][n][c];
+        }
+        hidden_error.push(error);
+      }
+      errors.unshift(hidden_error);
+    }
+
+    for (let l = 0; l < this.layers.length - 1; l++) {
+      for (let n = 0; n < this.layers[l + 1]; n++) {
+        for (let c = 0; c < this.layers[l]; c++) {
+          this.weights[l][n][c] +=
             this.learning_rate *
             errors[l][n] *
-            this.activation.derivative(layer_inputs[l + 1][n]);
+            this.activation.derivative(layer_inputs[l + 1][n]) *
+            activations[l][c];
         }
+        this.biases[l][n] +=
+          this.learning_rate *
+          errors[l][n] *
+          this.activation.derivative(layer_inputs[l + 1][n]);
       }
+    }
+  }
+
+  train_all(inputs, targets, epoch, test_percent = 0.2) {
+    if (inputs.length != targets.length) {
+      console.error("input length not equal to targets length");
+      console.error("*finishing");
+      return;
+    }
+    const train_data_num = Math.floor(inputs.length * (1 - test_percent));
+    for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
+      for (let data_index = 0; data_index < train_data_num; data_index++) {
+        this.train(inputs[data_index], targets[data_index]);
+      }
+    }
+
+    if (Math.floor(inputs.length * test_percent) > 0) {
+      const outputs = this.test(
+        inputs.slice(train_data_num),
+        targets.slice(train_data_num)
+      );
+      console.log(epoch, "epoch train completed!");
+      console.log("accuration:", NeuralNetwork.calculate_accuration(outputs));
+    }
+  }
+
+  train_all_dataset(dataset, epoch, test_percent = 0.2) {
+    const train_data_num = Math.floor(dataset.length * (1 - test_percent));
+
+    for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
+      for (let data_index = 0; data_index < train_data_num; data_index++) {
+        this.train(dataset[data_index][0], dataset[data_index][1]);
+      }
+    }
+
+    const inputs = [];
+    for (
+      let data_index = train_data_num;
+      data_index < dataset.length;
+      data_index++
+    ) {
+      inputs.push(dataset[data_index][0]);
+    }
+    const targets = [];
+    for (
+      let data_index = train_data_num;
+      data_index < dataset.length;
+      data_index++
+    ) {
+      targets.push(dataset[data_index][1]);
+    }
+    
+    if (inputs.length > 0) {
+      const outputs = this.test(inputs, targets);
+      console.log(epoch, "epoch train completed!");
+      console.log(
+        "accuration:",
+        NeuralNetwork.calculate_accuration(
+          outputs,
+          inputs.length
+        )
+      );
     }
   }
 
@@ -237,18 +301,18 @@ class NeuralNetwork {
   }
 
   /**
-   * 
-   * @param {Array} test_data 
+   *
+   * @param {Array} test_data
    * @returns sum_true
    */
-  test(test_data){
+  test(inputs, targets) {
     const outputs = [];
-    test_data.forEach(element => {
-      outputs.push(this.predict(element[0]));
+    inputs.forEach((element) => {
+      outputs.push(this.predict(element));
       let i = 0;
       for (let x = 0; x < this.layers[this.layers.length - 1]; x++) {
         for (let y = 0; y < this.layers[this.layers.length - 1]; y++) {
-          if(outputs[outputs.length - 1][y] > outputs[outputs.length - 1][i]){
+          if (outputs[outputs.length - 1][y] > outputs[outputs.length - 1][i]) {
             i = y;
           }
         }
@@ -263,7 +327,7 @@ class NeuralNetwork {
     for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
       sum_true.push(0);
       for (let o = 0; o < outputs.length; o++) {
-        if(test_data[o][1][index] == 1 && outputs[o][index] == 1){
+        if (targets[o][index] == 1 && outputs[o][index] == 1) {
           sum_true[index]++;
         }
       }
@@ -271,10 +335,10 @@ class NeuralNetwork {
     return sum_true;
   }
 
-  static calculate_accuration(output, data_count){
+  static calculate_accuration(output, test_length) {
     let accuration = 0;
     for (let index = 0; index < output.length; index++) {
-      accuration += (output[index] / data_count);
+      accuration += output[index] / test_length;
     }
     return accuration;
   }
