@@ -141,11 +141,17 @@ class NeuralNetwork {
   }
 
   train_all(inputs, targets, epoch, test_percent = 0.2) {
-    if (inputs.length != targets.length) {
-      console.error("input length not equal to targets length");
+    if (inputs.length != this.layers[0]) {
+      console.error("input length not equal to input layer neuron count");
       console.error("*finishing");
       return;
     }
+    if (targets.length != this.layers[this.layers.length - 1]) {
+      console.error("target output length not equal to output layer neuron count");
+      console.error("*finishing");
+      return;
+    }
+    
     const train_data_num = Math.floor(inputs.length * (1 - test_percent));
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
       for (let data_index = 0; data_index < train_data_num; data_index++) {
