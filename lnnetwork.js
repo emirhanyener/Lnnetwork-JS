@@ -36,6 +36,43 @@ class NeuralNetwork {
     }
   }
 
+  visualize(canvasId) {
+    console.log(this.weights);
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext("2d");
+
+    // Temizle
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let l = 0; l < this.layers.length; l++) {
+      for (let n = 0; n < this.layers[l]; n++) {
+        const fromX = (l * canvas.width) / this.layers.length + 50;
+        const fromY = (canvas.height / this.layers[l]) * n + 50;
+
+
+        for (let w = 0; w < this.layers[l + 1]; w++) {
+          const toX = ((l + 1) * canvas.width) / this.layers.length + 50;
+          const toY = (canvas.height / this.layers[l + 1]) * w + 50;
+
+          ctx.beginPath();
+          ctx.strokeStyle = this.weights[l][w][n] > 0 ? "green" : "red";
+          ctx.lineWidth = this.weights[l][w][n] * 5;
+          ctx.moveTo(fromX, fromY);
+          ctx.lineTo(toX, toY);
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.lineWidth = 4;
+        ctx.arc(fromX, fromY, 20, 0, 2 * Math.PI);
+        ctx.strokeStyle = "gray";
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+  }
+
   /**
    * Returns output data from trained neural network.
    * @param {Array} input array input data
@@ -147,11 +184,13 @@ class NeuralNetwork {
       return;
     }
     if (targets.length != this.layers[this.layers.length - 1]) {
-      console.error("target output length not equal to output layer neuron count");
+      console.error(
+        "target output length not equal to output layer neuron count"
+      );
       console.error("*finishing");
       return;
     }
-    
+
     const train_data_num = Math.floor(inputs.length * (1 - test_percent));
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
       for (let data_index = 0; data_index < train_data_num; data_index++) {
@@ -194,16 +233,13 @@ class NeuralNetwork {
     ) {
       targets.push(dataset[data_index][1]);
     }
-    
+
     if (inputs.length > 0) {
       const outputs = this.test(inputs, targets);
       console.log(epoch, "epoch train completed!");
       console.log(
         "accuration:",
-        NeuralNetwork.calculate_accuration(
-          outputs,
-          inputs.length
-        )
+        NeuralNetwork.calculate_accuration(outputs, inputs.length)
       );
     }
   }
