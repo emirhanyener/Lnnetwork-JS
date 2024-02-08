@@ -49,7 +49,6 @@ class NeuralNetwork {
         const fromX = (l * canvas.width) / this.layers.length + 50;
         const fromY = (canvas.height / this.layers[l]) * n + 50;
 
-
         for (let w = 0; w < this.layers[l + 1]; w++) {
           const toX = ((l + 1) * canvas.width) / this.layers.length + 50;
           const toY = (canvas.height / this.layers[l + 1]) * w + 50;
@@ -349,32 +348,18 @@ class NeuralNetwork {
    */
   test(inputs, targets) {
     const outputs = [];
-    inputs.forEach((element) => {
-      outputs.push(this.predict(element));
-      let i = 0;
+    for (let y = 0; y < this.layers[this.layers.length - 1]; y++) {
+      outputs.push([]);
       for (let x = 0; x < this.layers[this.layers.length - 1]; x++) {
-        for (let y = 0; y < this.layers[this.layers.length - 1]; y++) {
-          if (outputs[outputs.length - 1][y] > outputs[outputs.length - 1][i]) {
-            i = y;
-          }
-        }
-      }
-      for (let y = 0; y < this.layers[this.layers.length - 1]; y++) {
-        outputs[outputs.length - 1][y] = 0;
-      }
-      outputs[outputs.length - 1][i] = 1;
-    });
-
-    const sum_true = [];
-    for (let index = 0; index < this.layers[this.layers.length - 1]; index++) {
-      sum_true.push(0);
-      for (let o = 0; o < outputs.length; o++) {
-        if (targets[o][index] == 1 && outputs[o][index] == 1) {
-          sum_true[index]++;
-        }
+        outputs[y].push(0);
       }
     }
-    return sum_true;
+    for (let i = 0; i < inputs.length; i++) {
+      const _predicted = this.predict(inputs[i]);
+      outputs[targets[i].indexOf(1)][_predicted.indexOf(Math.max(..._predicted))]++;
+    }
+    console.log(outputs);
+    return outputs;
   }
 
   static calculate_accuration(output, test_length) {
