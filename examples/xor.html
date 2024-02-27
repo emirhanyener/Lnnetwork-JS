@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XOR Example</title>
+</head>
+<body>
+    
+</body>
+</html>
+<script src="../lnnetwork.js"></script>
+<script>
+    const nn = new NeuralNetwork([2, 3, 2], 0.1);
+
+    const output = {zero_zero: {before: "", after: ""}, zero_one: {before: "", after: ""}, one_zero: {before: "", after: ""}, one_one: {before: "", after: ""}};
+
+    output.zero_zero.before = ("zero: " + nn.predict([0, 0])[0] + ", one: " + nn.predict([0, 0])[1]);
+    output.zero_one.before = ("zero: " + nn.predict([0, 1])[0] + ", one: " + nn.predict([0, 1])[1]);
+    output.one_zero.before = ("zero: " + nn.predict([1, 0])[0] + ", one: " + nn.predict([1, 0])[1]);
+    output.one_one.before = ("zero: " + nn.predict([1, 1])[0] + ", one: " + nn.predict([1, 1])[1]);
+
+    for (let index = 0; index < 10000; index++) {
+        nn.train([0, 0], [1, 0]);
+        nn.train([0, 1], [0, 1]);
+        nn.train([1, 0], [0, 1]);
+        nn.train([1, 1], [1, 0]);
+    }
+
+    output.zero_zero.after = ("zero: " + nn.predict([0, 0])[0] + ", one: " + nn.predict([0, 0])[1]);
+    output.zero_one.after = ("zero: " + nn.predict([0, 1])[0] + ", one: " + nn.predict([0, 1])[1]);
+    output.one_zero.after = ("zero: " + nn.predict([1, 0])[0] + ", one: " + nn.predict([1, 0])[1]);
+    output.one_one.after = ("zero: " + nn.predict([1, 1])[0] + ", one: " + nn.predict([1, 1])[1]);
+
+    console.table(output);
+</script>
