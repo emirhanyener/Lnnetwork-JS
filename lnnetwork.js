@@ -36,14 +36,13 @@ class NeuralNetwork {
     }
   }
 
-  visualize(canvasId) {
+  visualize(canvasId, size) {
     console.log(this.weights);
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext("2d");
 
-    // Temizle
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (let l = 0; l < this.layers.length; l++) {
       for (let n = 0; n < this.layers[l]; n++) {
         const fromX = (l * canvas.width) / this.layers.length + 50;
@@ -55,15 +54,15 @@ class NeuralNetwork {
 
           ctx.beginPath();
           ctx.strokeStyle = this.weights[l][w][n] > 0 ? "green" : "red";
-          ctx.lineWidth = this.weights[l][w][n] * 5;
-          ctx.moveTo(fromX, fromY);
-          ctx.lineTo(toX, toY);
+          ctx.lineWidth = this.weights[l][w][n] * 0.1 * size;
+          ctx.moveTo(fromX * size, fromY * size);
+          ctx.lineTo(toX * size, toY * size);
           ctx.stroke();
         }
 
         ctx.beginPath();
-        ctx.lineWidth = 4;
-        ctx.arc(fromX, fromY, 20, 0, 2 * Math.PI);
+        ctx.lineWidth = 4 * size;
+        ctx.arc(fromX * size, fromY * size, 20 * size, 0, 2 * Math.PI);
         ctx.strokeStyle = "gray";
         ctx.fillStyle = "white";
         ctx.fill();
@@ -356,7 +355,9 @@ class NeuralNetwork {
     }
     for (let i = 0; i < inputs.length; i++) {
       const _predicted = this.predict(inputs[i]);
-      outputs[targets[i].indexOf(1)][_predicted.indexOf(Math.max(..._predicted))]++;
+      outputs[targets[i].indexOf(1)][
+        _predicted.indexOf(Math.max(..._predicted))
+      ]++;
     }
     console.log(outputs);
     return outputs;
