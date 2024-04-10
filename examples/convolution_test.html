@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Convolution Layer Test</title>
+  </head>
+  <body>
+    <script src="../cnn.js"></script>
+    <script>
+      const convolutionLayer = new ConvolutionLayer(10);
+      const inputMatrix = [
+        [
+          [1, 2, 3, 4],
+          [5, 6, 7, 8],
+          [9, 10, 11, 12],
+          [13, 14, 15, 16],
+        ],
+      ];
+      const outputMatrix = convolutionLayer.convolve(inputMatrix);
+      console.log(outputMatrix);
+    </script>
+  </body>
+</html>
