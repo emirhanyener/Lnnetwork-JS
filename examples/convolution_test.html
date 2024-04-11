@@ -8,7 +8,7 @@
   <body>
     <script src="../cnn.js"></script>
     <script>
-      const convolutionLayer = new ConvolutionLayer(10);
+      const cnn = new CNN(10);
       const inputMatrix = [
         [
           [1, 2, 3, 4],
@@ -17,8 +17,10 @@
           [13, 14, 15, 16],
         ],
       ];
-      const outputMatrix = convolutionLayer.convolve(inputMatrix);
+      const outputMatrix = cnn.convolve(inputMatrix);
       console.log(outputMatrix);
+      console.log(CNN.pool(inputMatrix, 2));
+      console.log(CNN.pool(outputMatrix, 2));
     </script>
   </body>
 </html>
