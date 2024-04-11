@@ -92,4 +92,16 @@ class CNN {
 
     return output;
   }
+
+  static flat(inputs){
+    const output = [];
+    for (let k = 0; k < inputs.length; k++) {
+      for (let y = 0; y < inputs[0].length; y++) {
+        for (let x = 0; x < inputs[0][0].length; x++) {
+          output.push(inputs[k][y][x]);
+        }
+      }
+    }
+    return output;
+  }
 }
