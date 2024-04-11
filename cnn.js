@@ -16,9 +16,9 @@ class CNN {
     }
   }
 
-  convolve(inputs, applyRelu = true) {
+  convolve(inputs, kernelSize = 3, applyRelu = true) {
     const output = [];
-    this.createRandomKernel(inputs.length, 3);
+    this.createRandomKernel(inputs.length, kernelSize);
 
     for (let k = 0; k < this.featureSize * inputs.length; k++) {
       output.push([]);
@@ -63,7 +63,6 @@ class CNN {
 
   static pool(inputs, kernelSize) {
     const output = [];
-    console.log(inputs[0].length/ kernelSize);
     for (let k = 0; k < inputs.length; k++) {
       output.push([]);
       for (let y = 0; y < inputs[0].length / kernelSize; y++) {
@@ -80,8 +79,10 @@ class CNN {
           let kernelOutput = 0;
           for (let ky = 0; ky < kernelSize; ky++) {
             for (let kx = 0; kx < kernelSize; kx++) {
-              kernelOutput +=
-                inputs[k][(y * kernelSize) + ky][(x * kernelSize) + kx];
+              if((y * kernelSize) + ky < inputs[k].length && (x * kernelSize) + kx < inputs[k][0].length){
+                kernelOutput = Math.max(
+                  inputs[k][(y * kernelSize) + ky][(x * kernelSize) + kx], kernelOutput);
+              }
             }
             output[k][y][x] = kernelOutput;
           }
