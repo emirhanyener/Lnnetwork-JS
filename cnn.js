@@ -1,4 +1,4 @@
-class ConvolutionLayer {
+class CNN {
   constructor(featureSize) {
     this.kernel = [];
     this.featureSize = featureSize;
@@ -58,6 +58,37 @@ class ConvolutionLayer {
         }
       }
     }
+    return output;
+  }
+
+  static pool(inputs, kernelSize) {
+    const output = [];
+    console.log(inputs[0].length/ kernelSize);
+    for (let k = 0; k < inputs.length; k++) {
+      output.push([]);
+      for (let y = 0; y < inputs[0].length / kernelSize; y++) {
+        output[k].push([]);
+        for (let x = 0; x < inputs[0][0].length / kernelSize; x++) {
+          output[k][y].push(0);
+        }
+      }
+    }
+
+    for (let k = 0; k < inputs.length; k++) {
+      for (let y = 0; y < output[k].length; y++) {
+        for (let x = 0; x < output[k][0].length; x++) {
+          let kernelOutput = 0;
+          for (let ky = 0; ky < kernelSize; ky++) {
+            for (let kx = 0; kx < kernelSize; kx++) {
+              kernelOutput +=
+                inputs[k][(y * kernelSize) + ky][(x * kernelSize) + kx];
+            }
+            output[k][y][x] = kernelOutput;
+          }
+        }
+      }
+    }
+
     return output;
   }
 }
