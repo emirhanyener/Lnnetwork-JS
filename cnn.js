@@ -4,7 +4,7 @@ class CNN {
     this.featureSize = featureSize;
   }
 
-  createRandomKernel(kernelCount, kernelSize) {
+  createRandomKernel(kernelCount, kernelSize = 3) {
     for (let k = 0; k < this.featureSize * kernelCount; k++) {
       this.kernel.push([]);
       for (let y = 0; y < kernelSize; y++) {
@@ -18,7 +18,6 @@ class CNN {
 
   convolve(inputs, kernelSize = 3, applyRelu = true) {
     const output = [];
-    this.createRandomKernel(inputs.length, kernelSize);
 
     for (let k = 0; k < this.featureSize * inputs.length; k++) {
       output.push([]);
