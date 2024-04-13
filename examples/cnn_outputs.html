@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CNN Output Example</title>
+    <style>
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      canvas{
+        border: 3px solid rgb(0, 110, 255);
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Input Canvas</h1>
+    <div id="canvas"></div>
+
+    <h1>Conv 1-1 Canvas</h1>
+    <div id="conv11Canvas"></div>
+    <h1>Conv 1-2 Canvas</h1>
+    <div id="conv12Canvas"></div>
+    <h1>Pool 1-1 Canvas</h1>
+    <div id="pool11Canvas"></div>
+
+    <h1>Conv 2-1 Canvas</h1>
+    <div id="conv21Canvas"></div>
+    <h1>Conv 2-2 Canvas</h1>
+    <div id="conv22Canvas"></div>
+    <h1>Pool 2-1 Canvas</h1>
+    <div id="pool21Canvas"></div>
+
+    <h1>Flat Canvas</h1>
+    <canvas id="flatCanvas"></canvas>
+
+    <script src="numbers_dataset.js"></script>
+    <script src="../cnn.js"></script>
+    <script>
+      const numbers = [
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+      ];
+
+      const pixelSize = 8;
+      let current_index = 0;
+      let number_index_array = 0;
+
+      const inputsDiv = document.getElementById("canvas");
+      const conv11Div = document.getElementById("conv11Canvas");
+      const conv12Div = document.getElementById("conv12Canvas");
+      const pool11Div = document.getElementById("pool11Canvas");
+      const conv21Div = document.getElementById("conv21Canvas");
+      const conv22Div = document.getElementById("conv22Canvas");
+      const pool21Div = document.getElementById("pool21Canvas");
+      const flatCanvas = document.getElementById("flatCanvas");
+      const flatCtx = flatCanvas.getContext("2d");
+
+      const conv11 = new CNN(10);
+      conv11.createRandomKernel(1);
+      const conv12 = new CNN(1);
+      conv12.createRandomKernel(10);
+
+      const conv21 = new CNN(1);
+      conv21.createRandomKernel(10);
+      const conv22 = new CNN(1);
+      conv22.createRandomKernel(10);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.code == "KeyD") {
+          if (current_index < 99) {
+            current_index++;
+          }
+        } else if (e.code == "KeyA") {
+          if (current_index > 0) {
+            current_index--;
+          }
+        }
+        if (e.code == "Digit1") {
+          number_index_array = 1;
+        } else if (e.code == "Digit2") {
+          number_index_array = 2;
+        } else if (e.code == "Digit3") {
+          number_index_array = 3;
+        } else if (e.code == "Digit4") {
+          number_index_array = 4;
+        } else if (e.code == "Digit5") {
+          number_index_array = 5;
+        } else if (e.code == "Digit6") {
+          number_index_array = 6;
+        } else if (e.code == "Digit7") {
+          number_index_array = 7;
+        } else if (e.code == "Digit8") {
+          number_index_array = 8;
+        } else if (e.code == "Digit9") {
+          number_index_array = 9;
+        } else if (e.code == "Digit0") {
+          number_index_array = 0;
+        }
+
+        apply([numbers_dataset[numbers[number_index_array]][current_index]]);
+      });
+
+      function apply(input) {
+        //reset divs
+        inputsDiv.innerHTML = "";
+        conv11Div.innerHTML = "";
+        conv12Div.innerHTML = "";
+        pool11Div.innerHTML = "";
+        conv21Div.innerHTML = "";
+        conv22Div.innerHTML = "";
+        pool21Div.innerHTML = "";
+
+        //calculate outputs
+        const conv11Output = conv11.convolve(input);
+        const conv12Output = conv12.convolve(conv11Output);
+        const pool11Output = CNN.pool(conv12Output, 2);
+
+        const conv21Output = conv21.convolve(pool11Output);
+        const conv22Output = conv22.convolve(conv21Output);
+        const pool21Output = CNN.pool(conv22Output, 2);
+        const flatOutput = CNN.flat(pool21Output);
+
+        //draw input canvas
+        for (let i = 0; i < input.length; i++) {
+          const canvas = document.createElement("canvas");
+          inputsDiv.appendChild(canvas);
+          canvas.width = input[0].length * pixelSize;
+          canvas.height = input[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < input[0].length; y++) {
+            for (let x = 0; x < input[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                input[i][y][x] * 255 +
+                ", " +
+                input[i][y][x] * 255 +
+                ", " +
+                input[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        //draw conv 1-1 canvas
+        for (let i = 0; i < conv11Output.length; i++) {
+          const canvas = document.createElement("canvas");
+          conv11Div.appendChild(canvas);
+          canvas.width = conv11Output[0].length * pixelSize;
+          canvas.height = conv11Output[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < conv11Output[0].length; y++) {
+            for (let x = 0; x < conv11Output[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                conv11Output[i][y][x] * 255 +
+                ", " +
+                conv11Output[i][y][x] * 255 +
+                ", " +
+                conv11Output[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        //draw conv 1-2 canvas
+        for (let i = 0; i < conv12Output.length; i++) {
+          const canvas = document.createElement("canvas");
+          conv12Div.appendChild(canvas);
+          canvas.width = conv12Output[0].length * pixelSize;
+          canvas.height = conv12Output[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < conv12Output[0].length; y++) {
+            for (let x = 0; x < conv12Output[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                conv12Output[i][y][x] * 255 +
+                ", " +
+                conv12Output[i][y][x] * 255 +
+                ", " +
+                conv12Output[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        //draw pool 1-1 canvas
+        for (let i = 0; i < pool11Output.length; i++) {
+          const canvas = document.createElement("canvas");
+          pool11Div.appendChild(canvas);
+          canvas.width = pool11Output[0].length * pixelSize;
+          canvas.height = pool11Output[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < pool11Output[0].length; y++) {
+            for (let x = 0; x < pool11Output[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                pool11Output[i][y][x] * 255 +
+                ", " +
+                pool11Output[i][y][x] * 255 +
+                ", " +
+                pool11Output[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        //draw conv 2-1 canvas
+        for (let i = 0; i < conv21Output.length; i++) {
+          const canvas = document.createElement("canvas");
+          conv21Div.appendChild(canvas);
+          canvas.width = conv21Output[0].length * pixelSize;
+          canvas.height = conv21Output[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < conv21Output[0].length; y++) {
+            for (let x = 0; x < conv21Output[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                conv21Output[i][y][x] * 255 +
+                ", " +
+                conv21Output[i][y][x] * 255 +
+                ", " +
+                conv21Output[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        //draw conv 2-2 canvas
+        for (let i = 0; i < conv22Output.length; i++) {
+          const canvas = document.createElement("canvas");
+          conv22Div.appendChild(canvas);
+          canvas.width = conv22Output[0].length * pixelSize;
+          canvas.height = conv22Output[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < conv22Output[0].length; y++) {
+            for (let x = 0; x < conv22Output[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                conv22Output[i][y][x] * 255 +
+                ", " +
+                conv22Output[i][y][x] * 255 +
+                ", " +
+                conv22Output[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        //draw pool 1-1 canvas
+        for (let i = 0; i < pool21Output.length; i++) {
+          const canvas = document.createElement("canvas");
+          pool21Div.appendChild(canvas);
+          canvas.width = pool21Output[0].length * pixelSize;
+          canvas.height = pool21Output[0].length * pixelSize;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          for (let y = 0; y < pool21Output[0].length; y++) {
+            for (let x = 0; x < pool21Output[0][0].length; x++) {
+              ctx.fillStyle =
+                "rgb(" +
+                pool21Output[i][y][x] * 255 +
+                ", " +
+                pool21Output[i][y][x] * 255 +
+                ", " +
+                pool21Output[i][y][x] * 255 +
+                ")";
+              ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+          }
+        }
+
+        flatCanvas.width = flatOutput.length * pixelSize;
+        flatCanvas.height = pixelSize;
+        flatCtx.fillStyle = "#000";
+        flatCtx.fillRect(0, 0, flatCanvas.width, flatCanvas.height);
+        for (let x = 0; x < flatOutput.length; x++) {
+          flatCtx.fillStyle =
+            "rgb(" +
+            flatOutput[x] * 255 +
+            ", " +
+            flatOutput[x] * 255 +
+            ", " +
+            flatOutput[x] * 255 +
+            ")";
+          flatCtx.fillRect(x * pixelSize, 0, pixelSize, pixelSize);
+        }
+      }
+    </script>
+  </body>
+</html>
