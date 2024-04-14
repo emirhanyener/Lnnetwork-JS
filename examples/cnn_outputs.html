@@ -66,14 +66,14 @@
       const flatCtx = flatCanvas.getContext("2d");
 
       const conv11 = new CNN(10);
-      conv11.createRandomKernel(1);
+      conv11.create_random_kernel(1);
       const conv12 = new CNN(1);
-      conv12.createRandomKernel(10);
+      conv12.create_random_kernel(10);
 
       const conv21 = new CNN(1);
-      conv21.createRandomKernel(10);
+      conv21.create_random_kernel(10);
       const conv22 = new CNN(1);
-      conv22.createRandomKernel(10);
+      conv22.create_random_kernel(10);
 
       document.addEventListener("keydown", (e) => {
         if (e.code == "KeyD") {

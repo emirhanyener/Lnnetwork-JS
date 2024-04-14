@@ -4,7 +4,7 @@ class CNN {
     this.featureSize = featureSize;
   }
 
-  createRandomKernel(kernelCount, kernelSize = 3) {
+  create_random_kernel(kernelCount, kernelSize = 3) {
     for (let k = 0; k < this.featureSize * kernelCount; k++) {
       this.kernel.push([]);
       for (let y = 0; y < kernelSize; y++) {
