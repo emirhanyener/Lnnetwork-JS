@@ -1,4 +1,4 @@
-class NeuralNetwork {
+export class NeuralNetwork {
   /**
    * @param {Array} layers [input, hidden..., output]
    * @param {Float} learning_rate (optional) learning_rate
