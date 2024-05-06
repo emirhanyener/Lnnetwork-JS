@@ -36,7 +36,7 @@ export class NeuralNetwork {
     }
   }
 
-  visualize(canvasId, params = {backgroundColor: "white", neuronFill: "white", neuronBorder: "gray"}) {
+  visualize(canvasId, params = {backgroundColor: "white", neuronFill: "white", neuronBorder: "gray", size: 1}) {
     console.log(this.weights);
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext("2d");
