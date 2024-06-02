@@ -8,7 +8,10 @@ class NeuralNetwork {
     this.layers = layers;
     this.learning_rate = learning_rate;
 
-    this.activation = NeuralNetwork.sigmoid;
+    this.total_epoch = 0;
+    this.last_metrics = {};
+
+    this.activation = NeuralNetwork.relu;
 
     //weights and biases
     this.weights = [];
@@ -86,7 +89,11 @@ class NeuralNetwork {
         for (let c = 0; c < this.layers[l]; c++) {
           sum += activations[c] * this.weights[l][n][c];
         }
-        layer_outputs.push(this.activation.function(sum + this.biases[l][n]));
+        if(l == this.layers.length - 2){
+          layer_outputs.push(NeuralNetwork.sigmoid.function(sum + this.biases[l][n]));
+        } else {
+          layer_outputs.push(this.activation.function(sum + this.biases[l][n]));
+        }
       }
       activations = layer_outputs;
     }
@@ -132,8 +139,13 @@ class NeuralNetwork {
         for (let c = 0; c < this.layers[l]; c++) {
           sum += activations[l][c] * this.weights[l][n][c];
         }
-        const output = this.activation.function(sum + this.biases[l][n]);
-        layer_outputs.push(output);
+        if(l == this.layers.length - 2){
+          const output = NeuralNetwork.sigmoid.function(sum + this.biases[l][n]);
+          layer_outputs.push(output);
+        } else {
+          const output = this.activation.function(sum + this.biases[l][n]);
+          layer_outputs.push(output);
+        }
       }
       activations.push(layer_outputs);
       layer_inputs.push(layer_outputs);
@@ -161,34 +173,37 @@ class NeuralNetwork {
     for (let l = 0; l < this.layers.length - 1; l++) {
       for (let n = 0; n < this.layers[l + 1]; n++) {
         for (let c = 0; c < this.layers[l]; c++) {
+        if(l == this.layers.length - 2){
+          this.weights[l][n][c] +=
+            this.learning_rate *
+            errors[l][n] *
+            NeuralNetwork.sigmoid.derivative(layer_inputs[l + 1][n]) *
+            activations[l][c];
+        } else {
           this.weights[l][n][c] +=
             this.learning_rate *
             errors[l][n] *
             this.activation.derivative(layer_inputs[l + 1][n]) *
             activations[l][c];
         }
-        this.biases[l][n] +=
-          this.learning_rate *
-          errors[l][n] *
-          this.activation.derivative(layer_inputs[l + 1][n]);
+        }
+        if(l == this.layers.length - 2){
+          this.biases[l][n] +=
+            this.learning_rate *
+            errors[l][n] *
+            NeuralNetwork.sigmoid.derivative(layer_inputs[l + 1][n]);
+        } else {
+          this.biases[l][n] +=
+            this.learning_rate *
+            errors[l][n] *
+            this.activation.derivative(layer_inputs[l + 1][n]);
+        }
       }
     }
   }
 
-  train_all(inputs, targets, epoch, test_percent = 0.2) {
-    if (inputs.length != this.layers[0]) {
-      console.error("input length not equal to input layer neuron count");
-      console.error("*finishing");
-      return;
-    }
-    if (targets.length != this.layers[this.layers.length - 1]) {
-      console.error(
-        "target output length not equal to output layer neuron count"
-      );
-      console.error("*finishing");
-      return;
-    }
-
+  //Train with inputs, targets and return confusion matrix, accuracy score, precision score, recall score, f1 score
+  train_all(inputs, targets, epoch=1, test_percent = 0.2) {
     const train_data_num = Math.floor(inputs.length * (1 - test_percent));
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
       for (let data_index = 0; data_index < train_data_num; data_index++) {
@@ -196,14 +211,15 @@ class NeuralNetwork {
       }
     }
 
-    if (Math.floor(inputs.length * test_percent) > 0) {
-      const outputs = this.test(
-        inputs.slice(train_data_num),
-        targets.slice(train_data_num)
-      );
-      console.log(epoch, "epoch train completed!");
-      console.log("accuration:", NeuralNetwork.calculate_accuration(outputs));
-    }
+    const outputs = this.test(
+      inputs.slice(train_data_num),
+      targets.slice(train_data_num)
+    );
+
+    this.total_epoch++;
+
+    this.last_metrics = NeuralNetwork.calculate_metrics(outputs);
+    return this.last_metrics;
   }
 
   train_all_dataset(dataset, epoch, test_percent = 0.2) {
@@ -353,21 +369,44 @@ class NeuralNetwork {
         outputs[y].push(0);
       }
     }
+    //Column predicted
+    //Row actual
     for (let i = 0; i < inputs.length; i++) {
       const _predicted = this.predict(inputs[i]);
       outputs[targets[i].indexOf(1)][
         _predicted.indexOf(Math.max(..._predicted))
       ]++;
     }
-    console.log(outputs);
     return outputs;
   }
 
-  static calculate_accuration(output, test_length) {
-    let accuration = 0;
-    for (let index = 0; index < output.length; index++) {
-      accuration += output[index] / test_length;
+  static calculate_metrics(output) {
+    let sum = 0;
+    for (let x = 0; x < output[0].length; x++) {
+      for (let y = 0; y < output.length; y++) {
+        sum+=output[y][x];
+      }
     }
-    return accuration;
+    let accuracy = 0;
+    for (let index = 0; index < output.length; index++) {
+      accuracy += output[index][index];
+    }
+    accuracy = (accuracy / sum);
+
+    let precision = 0;
+    for (let index = 0; index < output.length; index++) {
+      precision += output[index][0];
+    }
+    precision = output[0][0] / precision;
+
+    let recall = 0;
+    for (let index = 0; index < output.length; index++) {
+      recall += output[0][index];
+    }
+    recall = (output[0][0] / recall);
+
+    const f1score = ((2 * (precision * recall)) / (precision + recall));
+
+    return {confusion_matrix: output, accuracy: accuracy, precision: precision, recall: recall, f1score: f1score};
   }
 }
