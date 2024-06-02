@@ -210,14 +210,13 @@ class NeuralNetwork {
       for (let data_index = 0; data_index < train_data_num; data_index++) {
         this.train(inputs[data_index], targets[data_index]);
       }
+      this.total_epoch++;
     }
 
     const outputs = this.test(
       inputs.slice(train_data_num),
       targets.slice(train_data_num)
     );
-
-    this.total_epoch++;
 
     this.last_metrics = NeuralNetwork.calculate_metrics(outputs);
     return this.last_metrics;
@@ -355,6 +354,8 @@ class NeuralNetwork {
     this.learning_rate = data.learning_rate;
     this.weights = data.weights;
     this.biases = data.biases;
+    this.total_epoch = data.total_epoch;
+    this.last_metrics = data.last_metrics;
   }
 
   /**
