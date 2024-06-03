@@ -39,7 +39,15 @@ class NeuralNetwork {
     }
   }
 
-  visualize(canvasId, params = {backgroundColor: "white", neuronFill: "white", neuronBorder: "gray", size: 1}) {
+  visualize(
+    canvasId,
+    params = {
+      backgroundColor: "white",
+      neuronFill: "white",
+      neuronBorder: "gray",
+      size: 1,
+    }
+  ) {
     console.log(this.weights);
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext("2d");
@@ -66,7 +74,13 @@ class NeuralNetwork {
 
         ctx.beginPath();
         ctx.lineWidth = 4 * params.size;
-        ctx.arc(fromX * params.size, fromY * params.size, 20 * params.size, 0, 2 * Math.PI);
+        ctx.arc(
+          fromX * params.size,
+          fromY * params.size,
+          20 * params.size,
+          0,
+          2 * Math.PI
+        );
         ctx.strokeStyle = params.neuronBorder;
         ctx.fillStyle = params.neuronFill;
         ctx.fill();
@@ -90,8 +104,10 @@ class NeuralNetwork {
         for (let c = 0; c < this.layers[l]; c++) {
           sum += activations[c] * this.weights[l][n][c];
         }
-        if(l == this.layers.length - 2){
-          layer_outputs.push(NeuralNetwork.sigmoid.function(sum + this.biases[l][n]));
+        if (l == this.layers.length - 2) {
+          layer_outputs.push(
+            NeuralNetwork.sigmoid.function(sum + this.biases[l][n])
+          );
         } else {
           layer_outputs.push(this.activation.function(sum + this.biases[l][n]));
         }
@@ -140,8 +156,10 @@ class NeuralNetwork {
         for (let c = 0; c < this.layers[l]; c++) {
           sum += activations[l][c] * this.weights[l][n][c];
         }
-        if(l == this.layers.length - 2){
-          const output = NeuralNetwork.sigmoid.function(sum + this.biases[l][n]);
+        if (l == this.layers.length - 2) {
+          const output = NeuralNetwork.sigmoid.function(
+            sum + this.biases[l][n]
+          );
           layer_outputs.push(output);
         } else {
           const output = this.activation.function(sum + this.biases[l][n]);
@@ -174,21 +192,21 @@ class NeuralNetwork {
     for (let l = 0; l < this.layers.length - 1; l++) {
       for (let n = 0; n < this.layers[l + 1]; n++) {
         for (let c = 0; c < this.layers[l]; c++) {
-        if(l == this.layers.length - 2){
-          this.weights[l][n][c] +=
-            this.learning_rate *
-            errors[l][n] *
-            NeuralNetwork.sigmoid.derivative(layer_inputs[l + 1][n]) *
-            activations[l][c];
-        } else {
-          this.weights[l][n][c] +=
-            this.learning_rate *
-            errors[l][n] *
-            this.activation.derivative(layer_inputs[l + 1][n]) *
-            activations[l][c];
+          if (l == this.layers.length - 2) {
+            this.weights[l][n][c] +=
+              this.learning_rate *
+              errors[l][n] *
+              NeuralNetwork.sigmoid.derivative(layer_inputs[l + 1][n]) *
+              activations[l][c];
+          } else {
+            this.weights[l][n][c] +=
+              this.learning_rate *
+              errors[l][n] *
+              this.activation.derivative(layer_inputs[l + 1][n]) *
+              activations[l][c];
+          }
         }
-        }
-        if(l == this.layers.length - 2){
+        if (l == this.layers.length - 2) {
           this.biases[l][n] +=
             this.learning_rate *
             errors[l][n] *
@@ -204,22 +222,31 @@ class NeuralNetwork {
   }
 
   //Train with inputs, targets and return confusion matrix, accuracy score, precision score, recall score, f1 score
-  train_all(inputs, targets, epoch=1, test_percent = 0.2) {
-    const train_data_num = Math.floor(inputs.length * (1 - test_percent));
+  train_all(inputs, targets, epoch = 1, test_percent = 0.2) {
+    const test_data_num = Math.floor(inputs.length * test_percent);
+
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
-      for (let data_index = 0; data_index < train_data_num; data_index++) {
-        this.train(inputs[data_index], targets[data_index]);
+      const input_data = [...inputs];
+      const target_data = [...targets];
+      const test_input_data = [];
+      const test_target_data = [];
+
+      for (let index = 0; index < test_data_num; index++) {
+        const random_index = Math.floor(Math.random() * input_data.length);
+        test_input_data.push(input_data.splice(random_index, 1)[0]);
+        test_target_data.push(target_data.splice(random_index, 1)[0]);
       }
+
+      for (let data_index = 0; data_index < input_data.length; data_index++) {
+        this.train(input_data[data_index], target_data[data_index]);
+      }
+
+      const outputs = this.test(test_input_data, test_target_data);
+
+      this.last_metrics = NeuralNetwork.calculate_metrics(outputs);
+
       this.total_epoch++;
     }
-
-    const outputs = this.test(
-      inputs.slice(train_data_num),
-      targets.slice(train_data_num)
-    );
-
-    this.last_metrics = NeuralNetwork.calculate_metrics(outputs);
-    return this.last_metrics;
   }
 
   train_all_dataset(dataset, epoch, test_percent = 0.2) {
@@ -382,33 +409,66 @@ class NeuralNetwork {
     return outputs;
   }
 
-  static calculate_metrics(output) {
-    let sum = 0;
-    for (let x = 0; x < output[0].length; x++) {
-      for (let y = 0; y < output.length; y++) {
-        sum+=output[y][x];
+  static calculate_metrics(confusionMatrix) {
+    const numClasses = confusionMatrix.length;
+    const metrics = {
+      accuracy: 0,
+      precision: [],
+      recall: [],
+      f1Score: [],
+      weightedPrecision: 0,
+      weightedRecall: 0,
+      weightedF1Score: 0,
+    };
+
+    let totalSamples = 0;
+    let totalCorrectPredictions = 0;
+    const support = new Array(numClasses).fill(0);
+
+    for (let i = 0; i < numClasses; i++) {
+      support[i] = confusionMatrix[i].reduce((a, b) => a + b, 0);
+      totalSamples += support[i];
+      totalCorrectPredictions += confusionMatrix[i][i];
+    }
+
+    metrics.accuracy = totalCorrectPredictions / totalSamples;
+
+    for (let i = 0; i < numClasses; i++) {
+      let TP = confusionMatrix[i][i];
+      let FN = support[i] - TP;
+      let FP = 0;
+      let TN = totalSamples - (TP + FN);
+
+      for (let j = 0; j < numClasses; j++) {
+        if (j !== i) {
+          FP += confusionMatrix[j][i];
+          TN -= confusionMatrix[j][i];
+        }
       }
-    }
-    let accuracy = 0;
-    for (let index = 0; index < output.length; index++) {
-      accuracy += output[index][index];
-    }
-    accuracy = (accuracy / sum);
 
-    let precision = 0;
-    for (let index = 0; index < output.length; index++) {
-      precision += output[index][0];
+      const precision = TP / (TP + FP) || 0;
+      const recall = TP / (TP + FN) || 0;
+      const f1Score = (2 * (precision * recall)) / (precision + recall) || 0;
+
+      metrics.precision.push(precision);
+      metrics.recall.push(recall);
+      metrics.f1Score.push(f1Score);
+
+      metrics.weightedPrecision += precision * support[i];
+      metrics.weightedRecall += recall * support[i];
+      metrics.weightedF1Score += f1Score * support[i];
     }
-    precision = output[0][0] / precision;
 
-    let recall = 0;
-    for (let index = 0; index < output.length; index++) {
-      recall += output[0][index];
-    }
-    recall = (output[0][0] / recall);
+    metrics.weightedPrecision /= totalSamples;
+    metrics.weightedRecall /= totalSamples;
+    metrics.weightedF1Score /= totalSamples;
 
-    const f1score = ((2 * (precision * recall)) / (precision + recall));
-
-    return {confusion_matrix: output, accuracy: accuracy, precision: precision, recall: recall, f1score: f1score};
+    return {
+      confusion_matrix: confusionMatrix,
+      accuracy: metrics.accuracy,
+      precision: metrics.weightedPrecision,
+      recall: metrics.weightedRecall,
+      f1score: metrics.weightedF1Score,
+    };
   }
 }
