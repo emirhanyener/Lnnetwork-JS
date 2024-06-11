@@ -48,7 +48,6 @@ class NeuralNetwork {
       size: 1,
     }
   ) {
-    console.log(this.weights);
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext("2d");
 
@@ -226,10 +225,21 @@ class NeuralNetwork {
     const test_data_num = Math.floor(inputs.length * test_percent);
 
     for (let epoch_index = 0; epoch_index < epoch; epoch_index++) {
-      const input_data = [...inputs];
-      const target_data = [...targets];
+      let input_data = [...inputs];
+      let target_data = [...targets];
       const test_input_data = [];
       const test_target_data = [];
+
+      let random_input_data = [];
+      let random_target_data = [];
+
+      for (let index = 0; index < input_data.length; index++) {
+        const random_index = Math.floor(Math.random() * input_data.length);
+        random_input_data.push(input_data.splice(random_index, 1)[0]);
+        random_target_data.push(target_data.splice(random_index, 1)[0]);
+      }
+      input_data = random_input_data;
+      target_data = random_target_data;
 
       for (let index = 0; index < test_data_num; index++) {
         const random_index = Math.floor(Math.random() * input_data.length);
@@ -277,11 +287,6 @@ class NeuralNetwork {
 
     if (inputs.length > 0) {
       const outputs = this.test(inputs, targets);
-      console.log(epoch, "epoch train completed!");
-      console.log(
-        "accuration:",
-        NeuralNetwork.calculate_accuration(outputs, inputs.length)
-      );
     }
   }
 
@@ -407,6 +412,18 @@ class NeuralNetwork {
       ]++;
     }
     return outputs;
+  }
+
+  dropout(dropout_rate){
+    for (let w = 0; w < this.weights.length; w++) {
+      for (let n = 0; n < this.weights[w].length; n++) {
+        if(Math.random() < dropout_rate){
+          for (let nw = 0; nw < this.weights[w][n].length; nw++) {
+            this.weights[w][n][nw] = 0;
+          }
+        }
+      }
+    }
   }
 
   static calculate_metrics(confusionMatrix) {
